@@ -79,7 +79,7 @@ impl BlockchainNode for Client {
 
         Ok(StakeResult {
             tx_id,
-            estimated_rewards: format!("{:.6}", estimated_rewards),
+            estimated_rewards: format!("{estimated_rewards:.6}"),
         })
     }
 

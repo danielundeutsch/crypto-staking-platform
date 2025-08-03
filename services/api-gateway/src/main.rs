@@ -25,7 +25,7 @@ async fn main() {
     // Start server
     let addr = SocketAddr::from(([0, 0, 0, 0], 8080));
     let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
-    println!("API Gateway listening on {}", addr);
+    println!("API Gateway listening on {addr}");
 
     axum::serve(listener, app).await.unwrap();
 }
@@ -45,8 +45,7 @@ async fn list_services() -> Json<Vec<String>> {
 
 async fn stake_handler(Path(chain): Path<String>, Json(payload): Json<Value>) -> Json<Value> {
     println!(
-        "Stake request for chain: {} with payload: {:?}",
-        chain, payload
+        "Stake request for chain: {chain} with payload: {payload:?}"
     );
 
     Json(json!({
@@ -58,7 +57,7 @@ async fn stake_handler(Path(chain): Path<String>, Json(payload): Json<Value>) ->
 }
 
 async fn balance_handler(Path((chain, address)): Path<(String, String)>) -> Json<Value> {
-    println!("Balance request for chain: {} address: {}", chain, address);
+    println!("Balance request for chain: {chain} address: {address}");
 
     Json(json!({
         "address": address,

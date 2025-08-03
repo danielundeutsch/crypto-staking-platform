@@ -45,11 +45,11 @@ impl IntoResponse for NodeError {
             ),
             NodeError::BlockchainError(msg) => (
                 StatusCode::BAD_GATEWAY,
-                format!("Blockchain connection error: {}", msg),
+                format!("Blockchain connection error: {msg}"),
             ),
             NodeError::InvalidAddress(addr) => (
                 StatusCode::BAD_REQUEST,
-                format!("Invalid address: {}", addr),
+                format!("Invalid address: {addr}"),
             ),
             NodeError::InsufficientBalance => (
                 StatusCode::BAD_REQUEST,
@@ -57,19 +57,19 @@ impl IntoResponse for NodeError {
             ),
             NodeError::StakingError(msg) => (
                 StatusCode::UNPROCESSABLE_ENTITY,
-                format!("Staking operation failed: {}", msg),
+                format!("Staking operation failed: {msg}"),
             ),
             NodeError::ConfigError(msg) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                format!("Configuration error: {}", msg),
+                format!("Configuration error: {msg}"),
             ),
             NodeError::MetricsError(err) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                format!("Metrics error: {}", err),
+                format!("Metrics error: {err}"),
             ),
             NodeError::Utf8Error(err) => (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                format!("UTF-8 conversion error: {}", err),
+                format!("UTF-8 conversion error: {err}"),
             ),
             NodeError::InternalError => (
                 StatusCode::INTERNAL_SERVER_ERROR,

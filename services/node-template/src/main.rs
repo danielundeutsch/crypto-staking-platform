@@ -1,9 +1,9 @@
 use axum::{
     extract::State,
-    http::StatusCode,
     routing::{get, post},
     Json, Router,
 };
+use crate::blockchain::BlockchainNode;
 use prometheus::{Encoder, TextEncoder};
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
@@ -32,7 +32,7 @@ type SharedState = Arc<RwLock<AppState>>;
 struct AppState {
     config: Config,
     health_checker: HealthChecker,
-    metrics: Metrics,
+    metrics: Arc<Metrics>,
     blockchain_client: blockchain::Client,
 }
 
@@ -78,7 +78,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Initialize components
     let health_checker = HealthChecker::new();
-    let metrics = Metrics::new()?;
+    let metrics = Arc::new(Metrics::new()?);
     let blockchain_client = blockchain::Client::new(&config)?;
 
     // Register with service discovery
@@ -132,8 +132,7 @@ async fn health_check(State(state): State<SharedState>) -> Result<String, NodeEr
     }
 }
 
-async fn metrics_handler(State(state): State<SharedState>) -> Result<String, NodeError> {
-    let app_state = state.read().await;
+async fn metrics_handler(State(_state): State<SharedState>) -> Result<String, NodeError> {
     let encoder = TextEncoder::new();
     let metric_families = prometheus::gather();
     let mut buffer = Vec::new();
@@ -145,7 +144,7 @@ async fn stake_handler(
     State(state): State<SharedState>,
     Json(request): Json<StakeRequest>,
 ) -> Result<Json<StakeResponse>, NodeError> {
-    let mut app_state = state.write().await;
+    let app_state = state.write().await;
 
     // Record metric
     app_state.metrics.stake_requests.inc();
