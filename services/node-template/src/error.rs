@@ -47,10 +47,9 @@ impl IntoResponse for NodeError {
                 StatusCode::BAD_GATEWAY,
                 format!("Blockchain connection error: {msg}"),
             ),
-            NodeError::InvalidAddress(addr) => (
-                StatusCode::BAD_REQUEST,
-                format!("Invalid address: {addr}"),
-            ),
+            NodeError::InvalidAddress(addr) => {
+                (StatusCode::BAD_REQUEST, format!("Invalid address: {addr}"))
+            }
             NodeError::InsufficientBalance => (
                 StatusCode::BAD_REQUEST,
                 "Insufficient balance for staking".to_string(),

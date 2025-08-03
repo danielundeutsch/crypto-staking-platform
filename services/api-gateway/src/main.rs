@@ -44,9 +44,7 @@ async fn list_services() -> Json<Vec<String>> {
 }
 
 async fn stake_handler(Path(chain): Path<String>, Json(payload): Json<Value>) -> Json<Value> {
-    println!(
-        "Stake request for chain: {chain} with payload: {payload:?}"
-    );
+    println!("Stake request for chain: {chain} with payload: {payload:?}");
 
     Json(json!({
         "transaction_id": format!("0x{}", uuid::Uuid::new_v4().to_string().replace("-", "")),

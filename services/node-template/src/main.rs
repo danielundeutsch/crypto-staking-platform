@@ -1,9 +1,9 @@
+use crate::blockchain::BlockchainNode;
 use axum::{
     extract::State,
     routing::{get, post},
     Json, Router,
 };
-use crate::blockchain::BlockchainNode;
 use prometheus::{Encoder, TextEncoder};
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
