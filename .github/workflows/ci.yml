@@ -149,22 +149,21 @@ jobs:
           docker build -t frontend:${{ github.sha }} .
 
   # SonarQube Analysis
-  # Temporarily disabled until SonarCloud project is properly configured
-  # sonarqube:
-  #   name: SonarQube Analysis
-  #   runs-on: ubuntu-latest
-  #   needs: [api-gateway, node-template, frontend]
-  #   if: github.event_name == 'push'
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #       with:
-  #         fetch-depth: 0
+  sonarqube:
+    name: SonarQube Analysis
+    runs-on: ubuntu-latest
+    needs: [api-gateway, node-template, frontend]
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-  #     - name: SonarCloud Scan
-  #       uses: SonarSource/sonarcloud-github-action@master
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   # Deploy to staging (only on main branch)
   # deploy-staging:
