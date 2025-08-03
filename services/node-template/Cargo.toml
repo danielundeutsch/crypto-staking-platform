@@ -1,0 +1,47 @@
+[package]
+name = "node-template"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Web framework
+axum = { version = "0.7", features = ["macros"] }
+tokio = { version = "1", features = ["full"] }
+tower = { version = "0.4", features = ["full"] }
+tower-http = { version = "0.5", features = ["cors", "trace"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Error handling
+anyhow = "1"
+thiserror = "1"
+
+# Service discovery
+consul = "0.4"
+
+# Configuration
+config = "0.14"
+dotenv = "0.15"
+
+# Async HTTP client
+reqwest = { version = "0.11", features = ["json"] }
+
+# Metrics
+prometheus = "0.13"
+
+# Health checks
+async-trait = "0.1"
+
+# UUID
+uuid = { version = "1", features = ["v4", "serde"] }
+
+[dev-dependencies]
+mockall = "0.12"
+tower = { version = "0.4", features = ["util"] }
+hyper = { version = "1", features = ["full"] }
