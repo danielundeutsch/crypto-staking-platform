@@ -1,5 +1,5 @@
-use prometheus::{IntCounter, Registry, Histogram, HistogramOpts};
 use crate::error::NodeError;
+use prometheus::{Histogram, HistogramOpts, IntCounter, Registry};
 
 pub struct Metrics {
     pub stake_requests: IntCounter,
@@ -11,14 +11,20 @@ pub struct Metrics {
 
 impl Metrics {
     pub fn new() -> Result<Self, NodeError> {
-        let stake_requests = IntCounter::new("stake_requests_total", "Total number of stake requests")?;
-        let balance_requests = IntCounter::new("balance_requests_total", "Total number of balance requests")?;
-        let successful_stakes = IntCounter::new("successful_stakes_total", "Total number of successful stakes")?;
-        let failed_stakes = IntCounter::new("failed_stakes_total", "Total number of failed stakes")?;
-        
+        let stake_requests =
+            IntCounter::new("stake_requests_total", "Total number of stake requests")?;
+        let balance_requests =
+            IntCounter::new("balance_requests_total", "Total number of balance requests")?;
+        let successful_stakes = IntCounter::new(
+            "successful_stakes_total",
+            "Total number of successful stakes",
+        )?;
+        let failed_stakes =
+            IntCounter::new("failed_stakes_total", "Total number of failed stakes")?;
+
         let blockchain_latency = Histogram::with_opts(
             HistogramOpts::new("blockchain_latency_seconds", "Blockchain RPC call latency")
-                .buckets(vec![0.01, 0.05, 0.1, 0.5, 1.0, 5.0, 10.0])
+                .buckets(vec![0.01, 0.05, 0.1, 0.5, 1.0, 5.0, 10.0]),
         )?;
 
         // Register metrics

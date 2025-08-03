@@ -1,7 +1,7 @@
-use async_trait::async_trait;
-use serde::{Deserialize, Serialize};
 use crate::config::Config;
 use crate::error::NodeError;
+use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StakeResult {
@@ -18,7 +18,12 @@ pub struct BalanceInfo {
 
 #[async_trait]
 pub trait BlockchainNode {
-    async fn stake(&self, address: &str, amount: &str, duration_days: Option<u32>) -> Result<StakeResult, NodeError>;
+    async fn stake(
+        &self,
+        address: &str,
+        amount: &str,
+        duration_days: Option<u32>,
+    ) -> Result<StakeResult, NodeError>;
     async fn get_balance(&self, address: &str) -> Result<BalanceInfo, NodeError>;
     async fn validate_address(&self, address: &str) -> Result<bool, NodeError>;
     async fn get_staking_info(&self) -> Result<StakingInfo, NodeError>;
@@ -49,7 +54,12 @@ impl Client {
 
 #[async_trait]
 impl BlockchainNode for Client {
-    async fn stake(&self, address: &str, amount: &str, duration_days: Option<u32>) -> Result<StakeResult, NodeError> {
+    async fn stake(
+        &self,
+        address: &str,
+        amount: &str,
+        duration_days: Option<u32>,
+    ) -> Result<StakeResult, NodeError> {
         // Validate address first
         if !self.validate_address(address).await? {
             return Err(NodeError::InvalidAddress(address.to_string()));
@@ -60,11 +70,13 @@ impl BlockchainNode for Client {
         let tx_id = format!("0x{}", uuid::Uuid::new_v4().to_string().replace("-", ""));
         let apr = 5.0; // Example APR
         let days = duration_days.unwrap_or(30);
-        
+
         // Simple reward calculation
-        let amount_f64: f64 = amount.parse().map_err(|_| NodeError::StakingError("Invalid amount".to_string()))?;
+        let amount_f64: f64 = amount
+            .parse()
+            .map_err(|_| NodeError::StakingError("Invalid amount".to_string()))?;
         let estimated_rewards = amount_f64 * (apr / 100.0) * (days as f64 / 365.0);
-        
+
         Ok(StakeResult {
             tx_id,
             estimated_rewards: format!("{:.6}", estimated_rewards),
@@ -90,9 +102,12 @@ impl BlockchainNode for Client {
         // Basic validation - in reality this would be chain-specific
         match self.chain_name.as_str() {
             "ethereum" => Ok(address.starts_with("0x") && address.len() == 42),
-            "bitcoin" => Ok((address.starts_with("1") || address.starts_with("3") || address.starts_with("bc1")) && address.len() >= 26),
+            "bitcoin" => Ok((address.starts_with("1")
+                || address.starts_with("3")
+                || address.starts_with("bc1"))
+                && address.len() >= 26),
             "solana" => Ok(address.len() == 44), // Base58 encoded
-            _ => Ok(address.len() > 10), // Generic validation
+            _ => Ok(address.len() > 10),         // Generic validation
         }
     }
 

@@ -25,8 +25,7 @@ impl Config {
             consul_addr: env::var("CONSUL_ADDR")
                 .unwrap_or_else(|_| "http://localhost:8500".to_string()),
             node_rpc_url: env::var("NODE_RPC_URL")?,
-            log_level: env::var("LOG_LEVEL")
-                .unwrap_or_else(|_| "info".to_string()),
+            log_level: env::var("LOG_LEVEL").unwrap_or_else(|_| "info".to_string()),
         })
     }
 }

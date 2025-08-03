@@ -10,28 +10,28 @@ use thiserror::Error;
 pub enum NodeError {
     #[error("Service unavailable")]
     ServiceUnavailable,
-    
+
     #[error("Blockchain connection error: {0}")]
     BlockchainError(String),
-    
+
     #[error("Invalid address: {0}")]
     InvalidAddress(String),
-    
+
     #[error("Insufficient balance")]
     InsufficientBalance,
-    
+
     #[error("Staking failed: {0}")]
     StakingError(String),
-    
+
     #[error("Configuration error: {0}")]
     ConfigError(String),
-    
+
     #[error("Metrics error: {0}")]
     MetricsError(#[from] prometheus::Error),
-    
+
     #[error("UTF-8 conversion error: {0}")]
     Utf8Error(#[from] std::string::FromUtf8Error),
-    
+
     #[error("Internal server error")]
     InternalError,
 }

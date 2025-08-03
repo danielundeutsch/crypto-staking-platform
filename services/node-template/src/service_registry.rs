@@ -1,8 +1,8 @@
+use crate::error::NodeError;
 use consul::agent::{Agent, Service};
 use consul::Client;
 use std::collections::HashMap;
 use uuid::Uuid;
-use crate::error::NodeError;
 
 pub struct ServiceRegistrar {
     consul_client: Client,
@@ -15,19 +15,24 @@ impl ServiceRegistrar {
             address: consul_addr.to_string(),
             ..Default::default()
         };
-        
+
         let client = Client::new(config);
         let service_id = Uuid::new_v4().to_string();
-        
+
         Ok(ServiceRegistrar {
             consul_client: client,
             service_id,
         })
     }
 
-    pub async fn register(&self, name: &str, address: &str, port: u16) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn register(
+        &self,
+        name: &str,
+        address: &str,
+        port: u16,
+    ) -> Result<(), Box<dyn std::error::Error>> {
         let agent = Agent::new(&self.consul_client);
-        
+
         let service = Service {
             id: Some(self.service_id.clone()),
             name: name.to_string(),
@@ -42,7 +47,7 @@ impl ServiceRegistrar {
             }),
             ..Default::default()
         };
-        
+
         agent.register_service(&service).await?;
         Ok(())
     }
@@ -56,13 +61,13 @@ impl ServiceRegistrar {
     pub async fn update_health(&self, healthy: bool) -> Result<(), Box<dyn std::error::Error>> {
         let agent = Agent::new(&self.consul_client);
         let check_id = format!("service:{}", self.service_id);
-        
+
         if healthy {
             agent.pass_check(&check_id, None).await?;
         } else {
             agent.fail_check(&check_id, None).await?;
         }
-        
+
         Ok(())
     }
 }

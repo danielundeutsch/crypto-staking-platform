@@ -74,10 +74,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Load configuration
     let config = Config::from_env()?;
-    info!(
-        "Starting {} on port {}",
-        config.service_name, config.port
-    );
+    info!("Starting {} on port {}", config.service_name, config.port);
 
     // Initialize components
     let health_checker = HealthChecker::new();
@@ -115,14 +112,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Graceful shutdown
     let graceful = axum::serve(listener, app).with_graceful_shutdown(shutdown_signal());
-    
+
     if let Err(e) = graceful.await {
         error!("server error: {}", e);
     }
 
     // Deregister from service discovery
     registrar.deregister(&config.service_name).await?;
-    
+
     Ok(())
 }
 
@@ -149,16 +146,16 @@ async fn stake_handler(
     Json(request): Json<StakeRequest>,
 ) -> Result<Json<StakeResponse>, NodeError> {
     let mut app_state = state.write().await;
-    
+
     // Record metric
     app_state.metrics.stake_requests.inc();
-    
+
     // Process stake request
     let result = app_state
         .blockchain_client
         .stake(&request.address, &request.amount, request.duration_days)
         .await?;
-    
+
     Ok(Json(StakeResponse {
         transaction_id: result.tx_id,
         status: "pending".to_string(),
@@ -171,13 +168,13 @@ async fn balance_handler(
     axum::extract::Path(address): axum::extract::Path<String>,
 ) -> Result<Json<BalanceResponse>, NodeError> {
     let app_state = state.read().await;
-    
+
     // Record metric
     app_state.metrics.balance_requests.inc();
-    
+
     // Get balance information
     let balance_info = app_state.blockchain_client.get_balance(&address).await?;
-    
+
     Ok(Json(BalanceResponse {
         address,
         balance: balance_info.balance,
@@ -186,9 +183,11 @@ async fn balance_handler(
     }))
 }
 
-async fn info_handler(State(state): State<SharedState>) -> Result<Json<serde_json::Value>, NodeError> {
+async fn info_handler(
+    State(state): State<SharedState>,
+) -> Result<Json<serde_json::Value>, NodeError> {
     let app_state = state.read().await;
-    
+
     Ok(Json(serde_json::json!({
         "service": app_state.config.service_name,
         "version": env!("CARGO_PKG_VERSION"),
@@ -199,13 +198,13 @@ async fn info_handler(State(state): State<SharedState>) -> Result<Json<serde_jso
 
 async fn shutdown_signal() {
     use tokio::signal;
-    
+
     let ctrl_c = async {
         signal::ctrl_c()
             .await
             .expect("failed to install Ctrl+C handler");
     };
-    
+
     #[cfg(unix)]
     let terminate = async {
         signal::unix::signal(signal::unix::SignalKind::terminate())
@@ -213,14 +212,14 @@ async fn shutdown_signal() {
             .recv()
             .await;
     };
-    
+
     #[cfg(not(unix))]
     let terminate = std::future::pending::<()>();
-    
+
     tokio::select! {
         _ = ctrl_c => {},
         _ = terminate => {},
     }
-    
+
     info!("signal received, starting graceful shutdown");
 }
