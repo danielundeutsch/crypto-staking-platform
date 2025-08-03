@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use crate::blockchain::BlockchainNode;
 use axum::{
     extract::State,

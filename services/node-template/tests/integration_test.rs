@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use node_template::blockchain;
 
     #[tokio::test]
     async fn test_address_validation() {
