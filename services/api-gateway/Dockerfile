@@ -1,38 +1,35 @@
 # Build stage
-FROM rust:1.80-slim as builder
+FROM rust:1.82-slim AS builder
 
 WORKDIR /app
 
-# Copy manifests
-COPY Cargo.toml Cargo.lock ./
+# Install dependencies
+RUN apt-get update && apt-get install -y pkg-config libssl-dev
 
-# Build dependencies (this is cached if Cargo.toml doesn't change)
-RUN mkdir src && \
-    echo "fn main() {}" > src/main.rs && \
-    cargo build --release && \
-    rm -rf src
+# Copy Cargo files
+COPY Cargo.toml Cargo.lock ./
 
 # Copy source code
 COPY src ./src
 
-# Build application
-RUN touch src/main.rs && \
-    cargo build --release
+# Build the application
+RUN cargo build --release
 
 # Runtime stage
 FROM debian:bookworm-slim
 
-RUN apt-get update && apt-get install -y \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+# Install SSL certificates and other runtime dependencies
+RUN apt-get update && apt-get install -y ca-certificates libssl3 && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copy the binary from builder
-COPY --from=builder /app/target/release/api-gateway /app/
+# Copy the built binary
+COPY --from=builder /app/target/release/api-gateway /app/api-gateway
 
-# Expose port
+# Create a non-root user
+RUN useradd -m -u 1001 appuser && chown -R appuser:appuser /app
+USER appuser
+
 EXPOSE 8080
 
-# Run the binary
 CMD ["./api-gateway"]
