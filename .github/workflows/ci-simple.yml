@@ -1,0 +1,107 @@
+name: Simple CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # Check code formatting and linting
+  check:
+    name: Check Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+          
+      - name: Check Rust formatting
+        run: |
+          cd services/api-gateway && cargo fmt -- --check
+          cd ../node-template && cargo fmt -- --check
+          
+      - name: Run Clippy
+        run: |
+          cd services/api-gateway && cargo clippy -- -D warnings
+          cd ../node-template && cargo clippy -- -D warnings
+
+  # Build and test Rust services
+  build-rust:
+    name: Build Rust Services
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [api-gateway, node-template]
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            services/${{ matrix.service }}/target/
+          key: ${{ runner.os }}-cargo-${{ matrix.service }}-${{ hashFiles(format('services/{0}/Cargo.lock', matrix.service)) }}
+          
+      - name: Build
+        working-directory: services/${{ matrix.service }}
+        run: cargo build --release
+        
+      - name: Test
+        working-directory: services/${{ matrix.service }}
+        run: cargo test
+
+  # Build frontend
+  build-frontend:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+          
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+        
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+        
+      - name: Lint
+        working-directory: frontend
+        run: npm run lint
+
+  # SonarCloud analysis (only on push to main)
+  sonarcloud:
+    name: SonarCloud Analysis
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

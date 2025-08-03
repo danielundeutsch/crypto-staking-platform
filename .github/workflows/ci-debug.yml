@@ -1,0 +1,62 @@
+name: Debug CI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  debug-info:
+    name: Debug Environment
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Show directory structure
+        run: |
+          echo "=== Current directory ==="
+          pwd
+          echo "=== Directory contents ==="
+          ls -la
+          echo "=== Services directory ==="
+          ls -la services/
+          echo "=== Check Cargo.lock files ==="
+          find . -name "Cargo.lock" -type f
+          
+  test-rust-build:
+    name: Test Rust Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        
+      - name: Test API Gateway build
+        run: |
+          cd services/api-gateway
+          echo "=== Cargo.toml contents ==="
+          cat Cargo.toml
+          echo "=== Building ==="
+          cargo build --verbose
+          
+  test-frontend:
+    name: Test Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Test frontend build
+        run: |
+          cd frontend
+          echo "=== Package.json ==="
+          cat package.json
+          echo "=== Installing dependencies ==="
+          npm ci
+          echo "=== Building ==="
+          npm run build
